@@ -611,8 +611,11 @@ def transform_date_hook(data, typ, schema):
 
 def do_sync(account, catalog, state):
     streams_to_sync = get_streams_to_sync(account, catalog, state)
+    LOGGER.info("Streams to sync:")
+    for stream in streams_to_sync[::-1]:
+        LOGGER.info("- {}".format(stream.name))
     refs = load_shared_schema_refs()
-    for stream in streams_to_sync:
+    for stream in streams_to_sync[::-1]:
         LOGGER.info('Syncing %s, fields %s', stream.name, stream.fields())
         schema = singer.resolve_schema_references(load_schema(stream), refs)
         metadata_map = metadata.to_map(stream.catalog_entry.metadata)
@@ -636,6 +639,8 @@ def do_sync(account, catalog, state):
                         singer.write_state(message['state'])
                     else:
                         raise TapFacebookException('Unrecognized message {}'.format(message))
+
+    LOGGER.info("Ending Sync")
 
 
 def get_abs_path(path):
